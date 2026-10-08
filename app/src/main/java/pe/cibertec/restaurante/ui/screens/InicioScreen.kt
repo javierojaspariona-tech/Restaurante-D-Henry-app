@@ -1,9 +1,7 @@
 package pe.cibertec.restaurante.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,187 +9,290 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Icon
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import pe.cibertec.restaurante.R
 import pe.cibertec.restaurante.ui.theme.RestauranteAppTheme
+
+data class PedidoResumen(
+    val numero: String,
+    val tipo: String,
+    val total: String,
+    val estado: String
+)
 
 @Composable
 fun InicioScreen(
-    modifier: Modifier = Modifier,
-    onProductosClick: () -> Unit = {},
-    onOfertasClick: () -> Unit = {},
-    onPerfilClick: () -> Unit = {}
+    modifier: Modifier = Modifier
 ) {
-    Column(
+    val pedidosRecientes = listOf(
+        PedidoResumen(
+            numero = "#1042",
+            tipo = "Mesa 08",
+            total = "S/ 86.50",
+            estado = "Preparando"
+        ),
+        PedidoResumen(
+            numero = "#1041",
+            tipo = "Delivery",
+            total = "S/ 45.90",
+            estado = "Pendiente"
+        ),
+        PedidoResumen(
+            numero = "#1040",
+            tipo = "Mesa 03",
+            total = "S/ 120.00",
+            estado = "Completado"
+        )
+    )
+
+    LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(MaterialTheme.colorScheme.background),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(
+            horizontal = 24.dp,
+            vertical = 28.dp
+        ),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(
-                    horizontal = 24.dp,
-                    vertical = 28.dp
-                ),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-
+        item {
             Text(
-                text = "D’Verano",
-                style = MaterialTheme.typography.headlineLarge,
+                text = "D'Verano",
+                style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
             )
 
             Text(
-                text = "Bienvenido, D'Henry",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Medium
+                text = "Bienvenido, Daniel",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             Text(
-                text = "¿Qué deseas gestionar hoy?",
-                style = MaterialTheme.typography.bodyLarge,
+                text = "Este es el resumen del restaurante",
+                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+        }
 
-            Spacer(
-                modifier = Modifier.height(4.dp)
-            )
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(MaterialTheme.colorScheme.primary)
-                    .padding(28.dp)
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
             ) {
-                Column {
-
+                Column(
+                    modifier = Modifier.padding(22.dp)
+                ) {
                     Text(
-                        text = "Gestión del restaurante",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-
-                    Spacer(
-                        modifier = Modifier.height(10.dp)
-                    )
-
-                    Text(
-                        text = "Administra productos, ofertas y la información de D’Verano.",
+                        text = "Ventas de hoy",
                         style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onPrimary
+                        color = Color.White.copy(alpha = 0.85f)
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "S/ 1,250.00",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+
+                    Text(
+                        text = "24 pedidos completados",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White.copy(alpha = 0.75f)
                     )
                 }
             }
+        }
+
+        item {
+            Text(
+                text = "Resumen de hoy",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+        }
+
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                MetricCard(
+                    number = "8",
+                    description = "Pedidos pendientes",
+                    numberColor = Color(0xFFE38B29),
+                    modifier = Modifier.weight(1f)
+                )
+
+                MetricCard(
+                    number = "24",
+                    description = "Pedidos completados",
+                    numberColor = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                MetricCard(
+                    number = "36",
+                    description = "Productos activos",
+                    numberColor = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.weight(1f)
+                )
+
+                MetricCard(
+                    number = "3",
+                    description = "Productos agotados",
+                    numberColor = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "Accesos rápidos",
+                text = "Pedidos recientes",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+        }
+
+        items(pedidosRecientes) { pedido ->
+            PedidoResumenCard(pedido = pedido)
+        }
+    }
+}
+
+@Composable
+fun MetricCard(
+    number: String,
+    description: String,
+    numberColor: Color,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = number,
                 style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Bold,
+                color = numberColor
             )
 
-            AccesoCard(
-                icono = R.drawable.ic_restaurant,
-                titulo = "Menú del restaurante",
-                descripcion = "Consulta los platos disponibles",
-                onClick = {}
-            )
+            Spacer(modifier = Modifier.height(6.dp))
 
-            AccesoCard(
-                icono = R.drawable.ic_products,
-                titulo = "Productos",
-                descripcion = "Administra los productos del menú",
-                onClick = onProductosClick
-            )
-
-            AccesoCard(
-                icono = R.drawable.ic_orders,
-                titulo = "Ofertas",
-                descripcion = "Revisa y configura promociones",
-                onClick = onOfertasClick
-            )
-
-            AccesoCard(
-                icono = R.drawable.ic_person,
-                titulo = "Mi perfil",
-                descripcion = "Consulta los datos de tu cuenta",
-                onClick = onPerfilClick
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
 }
 
 @Composable
-private fun AccesoCard(
-    icono: Int,
-    titulo: String,
-    descripcion: String,
-    onClick: () -> Unit
+fun PedidoResumenCard(
+    pedido: PedidoResumen
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .background(MaterialTheme.colorScheme.surface)
-            .clickable {
-                onClick()
-            }
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
+    val statusColor = when (pedido.estado) {
+        "Preparando" -> Color(0xFF2563EB)
+        "Pendiente" -> Color(0xFFE38B29)
+        "Completado" -> Color(0xFF2E7D32)
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp
+        )
     ) {
-
-        Box(
+        Row(
             modifier = Modifier
-                .size(64.dp)
-                .clip(RoundedCornerShape(18.dp))
-                .background(MaterialTheme.colorScheme.tertiary),
-            contentAlignment = Alignment.Center
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Icon(
-                painter = painterResource(icono),
-                contentDescription = titulo,
-                modifier = Modifier.size(32.dp),
-                tint = MaterialTheme.colorScheme.onTertiary
-            )
-        }
+            Column {
+                Text(
+                    text = pedido.numero,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
 
-        Column(
-            modifier = Modifier
-                .padding(start = 20.dp)
-                .weight(1f)
-        ) {
+                Text(
+                    text = pedido.tipo,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
 
-            Text(
-                text = titulo,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Medium
-            )
+            Column {
+                Text(
+                    text = pedido.total,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
 
-            Text(
-                text = descripcion,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+                Text(
+                    text = pedido.estado,
+                    modifier = Modifier
+                        .padding(top = 4.dp)
+                        .background(
+                            color = statusColor.copy(alpha = 0.12f),
+                            shape = RoundedCornerShape(50)
+                        )
+                        .padding(
+                            horizontal = 10.dp,
+                            vertical = 4.dp
+                        ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = statusColor
+                )
+            }
         }
     }
 }

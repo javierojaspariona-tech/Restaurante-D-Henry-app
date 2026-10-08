@@ -32,7 +32,6 @@ data class NavigationItem(
 fun MainScreen(
     onLogoutClick: () -> Unit = {}
 ) {
-
     var selectedItem by remember {
         mutableStateOf(0)
     }
@@ -46,22 +45,18 @@ fun MainScreen(
     }
 
     val navigationItems = listOf(
-
         NavigationItem(
             title = "Inicio",
             icon = R.drawable.ic_restaurant
         ),
-
+        NavigationItem(
+            title = "Pedidos",
+            icon = R.drawable.ic_orders
+        ),
         NavigationItem(
             title = "Productos",
             icon = R.drawable.ic_products
         ),
-
-        NavigationItem(
-            title = "Ofertas",
-            icon = R.drawable.ic_orders
-        ),
-
         NavigationItem(
             title = "Perfil",
             icon = R.drawable.ic_person
@@ -70,41 +65,28 @@ fun MainScreen(
 
     Scaffold(
         bottomBar = {
-
             NavigationBar(
                 containerColor = MaterialTheme.colorScheme.surface
             ) {
-
                 navigationItems.forEachIndexed { index, item ->
 
                     NavigationBarItem(
                         selected = selectedItem == index,
-
                         onClick = {
                             selectedItem = index
                             productoSeleccionado = null
                         },
-
                         icon = {
                             Icon(
                                 painter = painterResource(item.icon),
                                 contentDescription = item.title
                             )
                         },
-
-                        label = {
-                            Text(
-                                text = item.title
-                            )
-                        },
-
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor =
                                 MaterialTheme.colorScheme.primary,
-
                             indicatorColor =
                                 MaterialTheme.colorScheme.primaryContainer,
-
                             unselectedIconColor =
                                 MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -112,73 +94,51 @@ fun MainScreen(
                 }
             }
         }
-
     ) { innerPadding ->
 
         when (selectedItem) {
 
-            // INICIO
             0 -> {
-
                 InicioScreen(
-                    modifier = Modifier.padding(innerPadding),
-
-                    onProductosClick = {
-                        selectedItem = 1
-                    },
-
-                    onOfertasClick = {
-                        selectedItem = 2
-                    },
-
-                    onPerfilClick = {
-                        selectedItem = 3
-                    }
+                    modifier = Modifier.padding(innerPadding)
                 )
             }
 
-            // PRODUCTOS
             1 -> {
+                TemporaryScreen(
+                    title = "Pedidos",
+                    modifier = Modifier.padding(innerPadding)
+                )
+            }
 
+            2 -> {
                 if (productoSeleccionado == null) {
-
                     ListaProductosScreen(
                         modifier = Modifier.padding(innerPadding),
-
                         productos = productos,
-
                         onProductoClick = { producto ->
                             productoSeleccionado = producto
                         },
-
                         onAgregarClick = {
-                            // Luego se conecta con Nuevo Producto
+                            // Más adelante se conectará con Nuevo Producto
                         },
-
                         onBack = {
                             selectedItem = 0
                         }
                     )
-
                 } else {
-
                     DetalleProductoScreen(
                         modifier = Modifier.padding(innerPadding),
-
                         producto = productoSeleccionado!!,
-
                         onBack = {
                             productoSeleccionado = null
                         },
-
                         onEditar = {
-                            // Luego se conecta con Editar Producto
+                            // Más adelante se conectará con Editar Producto
                         },
-
                         onEliminar = {
-
-                            productos = productos.filter {
-                                it.id != productoSeleccionado!!.id
+                            productos = productos.filter { producto ->
+                                producto.id != productoSeleccionado!!.id
                             }
 
                             productoSeleccionado = null
@@ -187,18 +147,7 @@ fun MainScreen(
                 }
             }
 
-            // OFERTAS
-            2 -> {
-
-                TemporaryScreen(
-                    title = "Ofertas",
-                    modifier = Modifier.padding(innerPadding)
-                )
-            }
-
-            // PERFIL
             3 -> {
-
                 PerfilScreen(
                     modifier = Modifier.padding(innerPadding),
                     onLogoutClick = onLogoutClick
@@ -213,25 +162,15 @@ fun TemporaryScreen(
     title: String,
     modifier: Modifier = Modifier
 ) {
-
     Column(
         modifier = modifier.fillMaxSize(),
-
-        horizontalAlignment =
-            Alignment.CenterHorizontally,
-
-        verticalArrangement =
-            Arrangement.Center
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-
         Text(
             text = title,
-
-            style =
-                MaterialTheme.typography.headlineMedium,
-
-            color =
-                MaterialTheme.colorScheme.primary
+            style = MaterialTheme.typography.headlineMedium,
+            color = MaterialTheme.colorScheme.primary
         )
     }
 }
