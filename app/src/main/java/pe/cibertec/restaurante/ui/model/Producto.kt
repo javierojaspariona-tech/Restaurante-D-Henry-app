@@ -1,6 +1,15 @@
 package pe.cibertec.restaurante.ui.model
 
+import android.net.Uri
 import java.util.Locale
+
+val CATEGORIAS = listOf(
+    "Platos principales",
+    "Entradas",
+    "Comidas rápidas",
+    "Bebidas",
+    "Postres"
+)
 
 data class Producto(
     val id: Int,
@@ -8,7 +17,10 @@ data class Producto(
     val categoria: String,
     val precio: Double,
     val descripcion: String,
-    val estado: String
+    val estado: String = "Activo",
+    val disponible: Boolean = (estado == "Activo"),
+    val imagenRes: Int? = null,
+    val imagenUri: Uri? = null
 ) {
 
     fun precioFormateado(): String {
@@ -16,6 +28,6 @@ data class Producto(
     }
 
     fun estaActivo(): Boolean {
-        return estado == "Activo"
+        return estado == "Activo" || disponible
     }
 }

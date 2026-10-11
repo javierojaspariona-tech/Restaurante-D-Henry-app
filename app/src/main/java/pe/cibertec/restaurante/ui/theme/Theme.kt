@@ -48,3 +48,11 @@ fun RestauranteAppTheme(
         content = content
     )
 }
+
+@Composable
+fun DVeranoTheme(
+    darkTheme: Boolean = false,
+    content: @Composable () -> Unit
+) {
+    RestauranteAppTheme(darkTheme = darkTheme, content = content)
+}

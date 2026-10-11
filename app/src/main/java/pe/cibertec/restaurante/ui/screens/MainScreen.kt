@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import pe.cibertec.restaurante.R
+import pe.cibertec.restaurante.ui.model.Oferta
 import pe.cibertec.restaurante.ui.model.Producto
 import pe.cibertec.restaurante.ui.model.productosDemo
 
@@ -40,8 +41,35 @@ fun MainScreen(
         mutableStateOf(productosDemo)
     }
 
+    var ofertas by remember {
+        mutableStateOf(
+            listOf(
+                Oferta(
+                    id = 1,
+                    producto = productosDemo[0],
+                    precioOferta = 18.00,
+                    activa = true
+                ),
+                Oferta(
+                    id = 2,
+                    producto = productosDemo[1],
+                    precioOferta = 14.00,
+                    activa = true
+                )
+            )
+        )
+    }
+
     var productoSeleccionado by remember {
         mutableStateOf<Producto?>(null)
+    }
+
+    var modoNuevoProducto by remember {
+        mutableStateOf(false)
+    }
+
+    var modoNuevaOferta by remember {
+        mutableStateOf(false)
     }
 
     val navigationItems = listOf(
@@ -58,6 +86,10 @@ fun MainScreen(
             icon = R.drawable.ic_products
         ),
         NavigationItem(
+            title = "Ofertas",
+            icon = R.drawable.ic_offer
+        ),
+        NavigationItem(
             title = "Perfil",
             icon = R.drawable.ic_person
         )
@@ -69,12 +101,13 @@ fun MainScreen(
                 containerColor = MaterialTheme.colorScheme.surface
             ) {
                 navigationItems.forEachIndexed { index, item ->
-
                     NavigationBarItem(
                         selected = selectedItem == index,
                         onClick = {
                             selectedItem = index
                             productoSeleccionado = null
+                            modoNuevoProducto = false
+                            modoNuevaOferta = false
                         },
                         icon = {
                             Icon(
@@ -82,13 +115,13 @@ fun MainScreen(
                                 contentDescription = item.title
                             )
                         },
+                        label = {
+                            Text(text = item.title)
+                        },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor =
-                                MaterialTheme.colorScheme.primary,
-                            indicatorColor =
-                                MaterialTheme.colorScheme.primaryContainer,
-                            unselectedIconColor =
-                                MaterialTheme.colorScheme.onSurfaceVariant
+                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                            indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     )
                 }
@@ -112,7 +145,20 @@ fun MainScreen(
             }
 
             2 -> {
-                if (productoSeleccionado == null) {
+                if (modoNuevoProducto) {
+                    NewProductScreen(
+                        modifier = Modifier.padding(innerPadding),
+                        onBack = {
+                            modoNuevoProducto = false
+                        },
+                        onGuardar = { nuevoProducto ->
+                            val nuevoId = (productos.maxOfOrNull { it.id } ?: 0) + 1
+                            val productoFinal = nuevoProducto.copy(id = nuevoId)
+                            productos = productos + productoFinal
+                            modoNuevoProducto = false
+                        }
+                    )
+                } else if (productoSeleccionado == null) {
                     ListaProductosScreen(
                         modifier = Modifier.padding(innerPadding),
                         productos = productos,
@@ -120,7 +166,7 @@ fun MainScreen(
                             productoSeleccionado = producto
                         },
                         onAgregarClick = {
-                            // Más adelante se conectará con Nuevo Producto
+                            modoNuevoProducto = true
                         },
                         onBack = {
                             selectedItem = 0
@@ -140,7 +186,6 @@ fun MainScreen(
                             productos = productos.filter { producto ->
                                 producto.id != productoSeleccionado!!.id
                             }
-
                             productoSeleccionado = null
                         }
                     )
@@ -148,6 +193,45 @@ fun MainScreen(
             }
 
             3 -> {
+                if (modoNuevaOferta) {
+                    NewOfferScreen(
+                        modifier = Modifier.padding(innerPadding),
+                        productos = productos,
+                        onBack = {
+                            modoNuevaOferta = false
+                        },
+                        onIrANuevoProducto = {
+                            modoNuevaOferta = false
+                            selectedItem = 2
+                            modoNuevoProducto = true
+                        },
+                        onGuardar = { nuevaOferta ->
+                            val nuevoId = (ofertas.maxOfOrNull { it.id } ?: 0) + 1
+                            val ofertaFinal = nuevaOferta.copy(id = nuevoId)
+                            ofertas = ofertas + ofertaFinal
+                            modoNuevaOferta = false
+                        }
+                    )
+                } else {
+                    OffersScreen(
+                        modifier = Modifier.padding(innerPadding),
+                        ofertas = ofertas,
+                        onBack = {
+                            selectedItem = 0
+                        },
+                        onAgregarOferta = {
+                            modoNuevaOferta = true
+                        },
+                        onOfertaClick = { oferta ->
+                            ofertas = ofertas.map {
+                                if (it.id == oferta.id) it.copy(activa = !it.activa) else it
+                            }
+                        }
+                    )
+                }
+            }
+
+            4 -> {
                 PerfilScreen(
                     modifier = Modifier.padding(innerPadding),
                     onLogoutClick = onLogoutClick

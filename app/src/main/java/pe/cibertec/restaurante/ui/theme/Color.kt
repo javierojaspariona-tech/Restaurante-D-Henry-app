@@ -17,3 +17,8 @@ val TextSecondary = Color(0xFF6B726B)
 
 val Danger = Color(0xFFE33629)
 val Warning = Color(0xFFF8BD00)
+
+val FondoPantalla = Background
+val BordeCampo = Border
+val TextoSecundario = TextSecondary
+val VerdeOscuro = Primary
