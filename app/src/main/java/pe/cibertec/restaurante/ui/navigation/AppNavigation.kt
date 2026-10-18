@@ -8,6 +8,8 @@ import androidx.navigation.compose.composable
 import pe.cibertec.restaurante.ui.screens.LoginScreen
 import pe.cibertec.restaurante.ui.screens.MainScreen
 import pe.cibertec.restaurante.ui.screens.RegisterScreen
+import androidx.lifecycle.viewmodel.compose.viewModel
+import pe.cibertec.restaurante.ui.producto.ProductoViewModel
 
 @Composable
 fun AppNavigation(
@@ -66,8 +68,12 @@ fun AppNavigation(
 
         composable(
             route = AppDestinations.Inicio.route
-        ) {
+        ) { entry ->
+            val productoViewModel: ProductoViewModel =
+                viewModel(viewModelStoreOwner = entry)
+
             MainScreen(
+                productoViewModel = productoViewModel,
                 onLogoutClick = {
                     navController.navigate(
                         AppDestinations.Login.route

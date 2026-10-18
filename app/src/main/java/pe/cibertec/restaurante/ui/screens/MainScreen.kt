@@ -23,6 +23,7 @@ import pe.cibertec.restaurante.R
 import pe.cibertec.restaurante.ui.model.Oferta
 import pe.cibertec.restaurante.ui.model.Producto
 import pe.cibertec.restaurante.ui.model.productosDemo
+import pe.cibertec.restaurante.ui.producto.ProductoViewModel
 
 data class NavigationItem(
     val title: String,
@@ -31,6 +32,7 @@ data class NavigationItem(
 
 @Composable
 fun MainScreen(
+    productoViewModel: ProductoViewModel,
     onLogoutClick: () -> Unit = {}
 ) {
     var selectedItem by remember {
@@ -152,6 +154,7 @@ fun MainScreen(
                             modoNuevoProducto = false
                         },
                         onGuardar = { nuevoProducto ->
+                            productoViewModel.guardarProducto(nuevoProducto)
                             val nuevoId = (productos.maxOfOrNull { it.id } ?: 0) + 1
                             val productoFinal = nuevoProducto.copy(id = nuevoId)
                             productos = productos + productoFinal
