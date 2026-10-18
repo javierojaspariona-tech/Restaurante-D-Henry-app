@@ -24,6 +24,7 @@ import pe.cibertec.restaurante.ui.model.Oferta
 import pe.cibertec.restaurante.ui.model.Producto
 import pe.cibertec.restaurante.ui.model.productosDemo
 import pe.cibertec.restaurante.ui.producto.ProductoViewModel
+import androidx.compose.runtime.LaunchedEffect
 
 data class NavigationItem(
     val title: String,
@@ -39,8 +40,10 @@ fun MainScreen(
         mutableStateOf(0)
     }
 
-    var productos by remember {
-        mutableStateOf(productosDemo)
+    val productos = productoViewModel.productos
+
+    LaunchedEffect(Unit) {
+        productoViewModel.cargarProductos()
     }
 
     var ofertas by remember {
@@ -155,9 +158,6 @@ fun MainScreen(
                         },
                         onGuardar = { nuevoProducto ->
                             productoViewModel.guardarProducto(nuevoProducto)
-                            val nuevoId = (productos.maxOfOrNull { it.id } ?: 0) + 1
-                            val productoFinal = nuevoProducto.copy(id = nuevoId)
-                            productos = productos + productoFinal
                             modoNuevoProducto = false
                         }
                     )
@@ -186,9 +186,7 @@ fun MainScreen(
                             // Más adelante se conectará con Editar Producto
                         },
                         onEliminar = {
-                            productos = productos.filter { producto ->
-                                producto.id != productoSeleccionado!!.id
-                            }
+                            productoViewModel.eliminarProducto(productoSeleccionado!!)
                             productoSeleccionado = null
                         }
                     )
