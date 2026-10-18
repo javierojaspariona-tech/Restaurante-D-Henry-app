@@ -67,7 +67,19 @@ fun AppNavigation(
         composable(
             route = AppDestinations.Inicio.route
         ) {
-            MainScreen()
+            MainScreen(
+                onLogoutClick = {
+                    navController.navigate(
+                        AppDestinations.Login.route
+                    ) {
+                        popUpTo(
+                            AppDestinations.Inicio.route
+                        ) {
+                            inclusive = true
+                        }
+                    }
+                }
+            )
         }
     }
 }
