@@ -112,7 +112,7 @@ fun PerfilScreen(
             ProfileInformationCard(
                 icon = R.drawable.ic_email,
                 title = "Correo electrónico",
-                information = "daniel@dverano.com"
+                information = "daniel@dhenrys.com"
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -120,7 +120,7 @@ fun PerfilScreen(
             ProfileInformationCard(
                 icon = R.drawable.ic_restaurant,
                 title = "Restaurante",
-                information = "D'Verano"
+                information = "D'Henrys"
             )
 
             Spacer(modifier = Modifier.height(28.dp))
@@ -150,7 +150,7 @@ fun PerfilScreen(
             }
 
             Text(
-                text = "D'Verano · Versión 1.0",
+                text = "D'Henrys · Versión 1.0",
                 modifier = Modifier.padding(vertical = 24.dp),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant

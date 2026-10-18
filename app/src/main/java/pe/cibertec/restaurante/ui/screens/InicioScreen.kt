@@ -68,7 +68,7 @@ fun InicioScreen(
     ) {
         item {
             Text(
-                text = "D'Verano",
+                text = "D'Henrys",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary

@@ -90,7 +90,7 @@ fun RegisterScreen(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "D'Verano",
+            text = "D'Henrys",
             style = MaterialTheme.typography.headlineLarge,
             color = Primary
         )
