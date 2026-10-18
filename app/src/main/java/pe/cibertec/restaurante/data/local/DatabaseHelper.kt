@@ -43,6 +43,16 @@ class DatabaseHelper(
                 FOREIGN KEY (producto_id) REFERENCES productos(id)
             )
         """.trimIndent())
+
+        // Datos iniciales (mismos productos de ProductoDemo.kt)
+        db.execSQL("""
+            INSERT INTO productos (nombre, categoria, precio, descripcion, estado) VALUES
+            ('Lomo Saltado', 'Platos principales', 22.00, 'Lomo de res salteado con cebolla, tomate y papas fritas, acompañado de arroz.', 'Activo'),
+            ('Ají de Gallina', 'Platos principales', 18.00, 'Gallina deshilachada en crema de ají amarillo, acompañada de arroz.', 'Activo'),
+            ('Hamburguesa', 'Comidas rápidas', 15.00, 'Hamburguesa de carne con queso, lechuga y tomate, acompañada de papas.', 'Activo'),
+            ('Ensalada César', 'Entradas', 12.00, 'Lechuga fresca con pollo, crutones y queso parmesano.', 'Inactivo'),
+            ('Inca Kola 500ml', 'Bebidas', 5.00, 'Gaseosa Inca Kola de 500 ml.', 'Activo')
+        """.trimIndent())
     }
 
     // ROLLBACK
@@ -59,6 +69,6 @@ class DatabaseHelper(
 
     companion object {
         private const val DATABASE_NAME = "dhenrys.db"
-        private const val DATABASE_VERSION = 1
+        private const val DATABASE_VERSION = 2
     }
 }
