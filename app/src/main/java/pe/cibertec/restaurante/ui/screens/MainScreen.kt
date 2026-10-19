@@ -12,6 +12,7 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,7 +25,6 @@ import pe.cibertec.restaurante.ui.model.Oferta
 import pe.cibertec.restaurante.ui.model.Producto
 import pe.cibertec.restaurante.ui.model.productosDemo
 import pe.cibertec.restaurante.ui.producto.ProductoViewModel
-import androidx.compose.runtime.LaunchedEffect
 
 data class NavigationItem(
     val title: String,
@@ -77,14 +77,11 @@ fun MainScreen(
         mutableStateOf(false)
     }
 
+    // Barra inferior según el diseño del PDF.
     val navigationItems = listOf(
         NavigationItem(
             title = "Inicio",
             icon = R.drawable.ic_restaurant
-        ),
-        NavigationItem(
-            title = "Pedidos",
-            icon = R.drawable.ic_orders
         ),
         NavigationItem(
             title = "Productos",
@@ -108,25 +105,32 @@ fun MainScreen(
                 navigationItems.forEachIndexed { index, item ->
                     NavigationBarItem(
                         selected = selectedItem == index,
+
                         onClick = {
                             selectedItem = index
                             productoSeleccionado = null
                             modoNuevoProducto = false
                             modoNuevaOferta = false
                         },
+
                         icon = {
                             Icon(
                                 painter = painterResource(item.icon),
                                 contentDescription = item.title
                             )
                         },
+
                         label = {
                             Text(text = item.title)
                         },
+
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MaterialTheme.colorScheme.primary,
-                            indicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            selectedIconColor =
+                                MaterialTheme.colorScheme.primary,
+                            indicatorColor =
+                                MaterialTheme.colorScheme.primaryContainer,
+                            unselectedIconColor =
+                                MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     )
                 }
@@ -136,103 +140,162 @@ fun MainScreen(
 
         when (selectedItem) {
 
+            // 0. INICIO
             0 -> {
                 InicioScreen(
-                    modifier = Modifier.padding(innerPadding)
+                    modifier = Modifier.padding(innerPadding),
+
+                    onProductosClick = {
+                        selectedItem = 1
+                        productoSeleccionado = null
+                        modoNuevoProducto = false
+                        modoNuevaOferta = false
+                    },
+
+                    onOfertasClick = {
+                        selectedItem = 2
+                        productoSeleccionado = null
+                        modoNuevoProducto = false
+                        modoNuevaOferta = false
+                    },
+
+                    onPerfilClick = {
+                        selectedItem = 3
+                        productoSeleccionado = null
+                        modoNuevoProducto = false
+                        modoNuevaOferta = false
+                    }
                 )
             }
 
+            // 1. PRODUCTOS
             1 -> {
-                TemporaryScreen(
-                    title = "Pedidos",
-                    modifier = Modifier.padding(innerPadding)
-                )
-            }
-
-            2 -> {
                 if (modoNuevoProducto) {
+
                     NewProductScreen(
                         modifier = Modifier.padding(innerPadding),
+
                         onBack = {
                             modoNuevoProducto = false
                         },
+
                         onGuardar = { nuevoProducto ->
-                            productoViewModel.guardarProducto(nuevoProducto)
+                            productoViewModel.guardarProducto(
+                                nuevoProducto
+                            )
+
                             modoNuevoProducto = false
                         }
                     )
+
                 } else if (productoSeleccionado == null) {
+
                     ListaProductosScreen(
                         modifier = Modifier.padding(innerPadding),
+
                         productos = productos,
+
                         onProductoClick = { producto ->
                             productoSeleccionado = producto
                         },
+
                         onAgregarClick = {
                             modoNuevoProducto = true
                         },
+
                         onBack = {
                             selectedItem = 0
                         }
                     )
+
                 } else {
+
                     DetalleProductoScreen(
                         modifier = Modifier.padding(innerPadding),
+
                         producto = productoSeleccionado!!,
+
                         onBack = {
                             productoSeleccionado = null
                         },
+
                         onEditar = {
-                            // Más adelante se conectará con Editar Producto
+                            // Pendiente de conectar con la edición.
                         },
+
                         onEliminar = {
-                            productoViewModel.eliminarProducto(productoSeleccionado!!)
+                            productoViewModel.eliminarProducto(
+                                productoSeleccionado!!
+                            )
+
                             productoSeleccionado = null
                         }
                     )
                 }
             }
 
-            3 -> {
+            // 2. OFERTAS
+            2 -> {
                 if (modoNuevaOferta) {
+
                     NewOfferScreen(
                         modifier = Modifier.padding(innerPadding),
+
                         productos = productos,
+
                         onBack = {
                             modoNuevaOferta = false
                         },
+
                         onIrANuevoProducto = {
                             modoNuevaOferta = false
-                            selectedItem = 2
+                            selectedItem = 1
                             modoNuevoProducto = true
                         },
+
                         onGuardar = { nuevaOferta ->
-                            val nuevoId = (ofertas.maxOfOrNull { it.id } ?: 0) + 1
-                            val ofertaFinal = nuevaOferta.copy(id = nuevoId)
+                            val nuevoId =
+                                (ofertas.maxOfOrNull { it.id } ?: 0) + 1
+
+                            val ofertaFinal = nuevaOferta.copy(
+                                id = nuevoId
+                            )
+
                             ofertas = ofertas + ofertaFinal
                             modoNuevaOferta = false
                         }
                     )
+
                 } else {
+
                     OffersScreen(
                         modifier = Modifier.padding(innerPadding),
+
                         ofertas = ofertas,
+
                         onBack = {
                             selectedItem = 0
                         },
+
                         onAgregarOferta = {
                             modoNuevaOferta = true
                         },
+
                         onOfertaClick = { oferta ->
                             ofertas = ofertas.map {
-                                if (it.id == oferta.id) it.copy(activa = !it.activa) else it
+                                if (it.id == oferta.id) {
+                                    it.copy(activa = !it.activa)
+                                } else {
+                                    it
+                                }
                             }
                         }
                     )
                 }
             }
 
-            4 -> {
+            // 3. PERFIL
+            3 -> {
                 PerfilScreen(
                     modifier = Modifier.padding(innerPadding),
                     onLogoutClick = onLogoutClick
