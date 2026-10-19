@@ -142,30 +142,7 @@ fun MainScreen(
 
             // 0. INICIO
             0 -> {
-                InicioScreen(
-                    modifier = Modifier.padding(innerPadding),
 
-                    onProductosClick = {
-                        selectedItem = 1
-                        productoSeleccionado = null
-                        modoNuevoProducto = false
-                        modoNuevaOferta = false
-                    },
-
-                    onOfertasClick = {
-                        selectedItem = 2
-                        productoSeleccionado = null
-                        modoNuevoProducto = false
-                        modoNuevaOferta = false
-                    },
-
-                    onPerfilClick = {
-                        selectedItem = 3
-                        productoSeleccionado = null
-                        modoNuevoProducto = false
-                        modoNuevaOferta = false
-                    }
-                )
             }
 
             // 1. PRODUCTOS
@@ -241,7 +218,10 @@ fun MainScreen(
                     NewOfferScreen(
                         modifier = Modifier.padding(innerPadding),
 
-                        productos = productos,
+                        // Solo productos que todavía no tienen una oferta
+                        productos = productos.filter { producto ->
+                            ofertas.none { it.producto.id == producto.id }
+                        },
 
                         onBack = {
                             modoNuevaOferta = false
@@ -254,14 +234,22 @@ fun MainScreen(
                         },
 
                         onGuardar = { nuevaOferta ->
-                            val nuevoId =
-                                (ofertas.maxOfOrNull { it.id } ?: 0) + 1
+                            // Seguridad: un producto solo puede tener una oferta
+                            val yaTieneOferta = ofertas.any {
+                                it.producto.id == nuevaOferta.producto.id
+                            }
 
-                            val ofertaFinal = nuevaOferta.copy(
-                                id = nuevoId
-                            )
+                            if (!yaTieneOferta) {
+                                val nuevoId =
+                                    (ofertas.maxOfOrNull { it.id } ?: 0) + 1
 
-                            ofertas = ofertas + ofertaFinal
+                                val ofertaFinal = nuevaOferta.copy(
+                                    id = nuevoId
+                                )
+
+                                ofertas = ofertas + ofertaFinal
+                            }
+
                             modoNuevaOferta = false
                         }
                     )
@@ -281,7 +269,7 @@ fun MainScreen(
                             modoNuevaOferta = true
                         },
 
-                        onOfertaClick = { oferta ->
+                        onToggleActiva = { oferta ->
                             ofertas = ofertas.map {
                                 if (it.id == oferta.id) {
                                     it.copy(activa = !it.activa)
@@ -289,6 +277,20 @@ fun MainScreen(
                                     it
                                 }
                             }
+                        },
+
+                        onModificarPrecio = { oferta, nuevoPrecio ->
+                            ofertas = ofertas.map {
+                                if (it.id == oferta.id) {
+                                    it.copy(precioOferta = nuevoPrecio)
+                                } else {
+                                    it
+                                }
+                            }
+                        },
+
+                        onEliminar = { oferta ->
+                            ofertas = ofertas.filter { it.id != oferta.id }
                         }
                     )
                 }
