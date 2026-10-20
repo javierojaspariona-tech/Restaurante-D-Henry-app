@@ -159,6 +159,14 @@ fun OffersScreen(
                     lineHeight = 16.sp,
                     color = TextoSecundarioOfertas
                 )
+
+                Text(
+                    text = "Toca el estado para cambiarlo o pulsa la tarjeta para modificar/eliminar",
+                    fontSize = 11.sp,
+                    lineHeight = 14.sp,
+                    color = TextoSecundarioOfertas,
+                    modifier = Modifier.padding(top = 2.dp)
+                )
             }
         }
 

@@ -21,9 +21,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import pe.cibertec.restaurante.R
-import pe.cibertec.restaurante.ui.model.Oferta
 import pe.cibertec.restaurante.ui.model.Producto
-import pe.cibertec.restaurante.ui.model.productosDemo
+import pe.cibertec.restaurante.ui.oferta.OfertaViewModel
 import pe.cibertec.restaurante.ui.producto.ProductoViewModel
 
 data class NavigationItem(
@@ -34,6 +33,7 @@ data class NavigationItem(
 @Composable
 fun MainScreen(
     productoViewModel: ProductoViewModel,
+    ofertaViewModel: OfertaViewModel,
     onLogoutClick: () -> Unit = {}
 ) {
     var selectedItem by remember {
@@ -42,28 +42,19 @@ fun MainScreen(
 
     val productos = productoViewModel.productos
 
+    // Las ofertas ahora se guardan en la base de datos, igual que los productos.
+    val ofertas = ofertaViewModel.ofertas
+
     LaunchedEffect(Unit) {
         productoViewModel.cargarProductos()
+        ofertaViewModel.cargarOfertas()
     }
 
-    // Ofertas de ejemplo: todavía se mantienen en memoria.
-    var ofertas by remember {
-        mutableStateOf(
-            listOf(
-                Oferta(
-                    id = 1,
-                    producto = productosDemo[0],
-                    precioOferta = 18.00,
-                    activa = true
-                ),
-                Oferta(
-                    id = 2,
-                    producto = productosDemo[1],
-                    precioOferta = 14.00,
-                    activa = true
-                )
-            )
-        )
+    // Al entrar a Ofertas se recargan para reflejar cambios en los productos (precio editado o producto eliminado).
+    LaunchedEffect(selectedItem) {
+        if (selectedItem == 2) {
+            ofertaViewModel.cargarOfertas()
+        }
     }
 
     // Producto que se está consultando.
@@ -314,19 +305,15 @@ fun MainScreen(
 
                         onGuardar = { nuevaOferta ->
 
+                            // El ViewModel inserta la oferta (ID 0).
+                            // La base de datos también impide repetir
+                            // una oferta para el mismo producto.
                             val yaTieneOferta = ofertas.any {
                                 it.producto.id == nuevaOferta.producto.id
                             }
 
                             if (!yaTieneOferta) {
-                                val nuevoId =
-                                    (ofertas.maxOfOrNull { it.id } ?: 0) + 1
-
-                                val ofertaFinal = nuevaOferta.copy(
-                                    id = nuevoId
-                                )
-
-                                ofertas = ofertas + ofertaFinal
+                                ofertaViewModel.guardarOferta(nuevaOferta)
                             }
 
                             modoNuevaOferta = false
@@ -350,31 +337,21 @@ fun MainScreen(
 
                         // Activar o desactivar una oferta.
                         onToggleActiva = { oferta ->
-                            ofertas = ofertas.map {
-                                if (it.id == oferta.id) {
-                                    it.copy(activa = !it.activa)
-                                } else {
-                                    it
-                                }
-                            }
+                            ofertaViewModel.guardarOferta(
+                                oferta.copy(activa = !oferta.activa)
+                            )
                         },
 
                         // Actualizar el precio de una oferta.
                         onModificarPrecio = { oferta, nuevoPrecio ->
-                            ofertas = ofertas.map {
-                                if (it.id == oferta.id) {
-                                    it.copy(precioOferta = nuevoPrecio)
-                                } else {
-                                    it
-                                }
-                            }
+                            ofertaViewModel.guardarOferta(
+                                oferta.copy(precioOferta = nuevoPrecio)
+                            )
                         },
 
-                        // Eliminar una oferta de la lista.
+                        // Eliminar una oferta.
                         onEliminar = { oferta ->
-                            ofertas = ofertas.filter {
-                                it.id != oferta.id
-                            }
+                            ofertaViewModel.eliminarOferta(oferta)
                         }
                     )
                 }
