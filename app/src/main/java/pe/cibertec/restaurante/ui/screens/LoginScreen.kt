@@ -1,5 +1,6 @@
 package pe.cibertec.restaurante.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -24,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -43,7 +45,6 @@ fun LoginScreen(
     onLoginClick: () -> Unit = {},
     onRegisterClick: () -> Unit = {}
 ) {
-    // Valores escritos por el usuario
     var email by remember {
         mutableStateOf("")
     }
@@ -52,12 +53,10 @@ fun LoginScreen(
         mutableStateOf("")
     }
 
-    // Controla si la contraseña puede verse
     var passwordVisible by remember {
         mutableStateOf(false)
     }
 
-    // Estados para mostrar errores
     var emailError by remember {
         mutableStateOf(false)
     }
@@ -73,14 +72,21 @@ fun LoginScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(
-            text = "D'Henrys",
-            style = MaterialTheme.typography.headlineLarge,
-            color = Primary
+
+        // Logo de D'HENRY
+        Image(
+            painter = painterResource(
+                id = R.drawable.ic_launcher_foreground
+            ),
+            contentDescription = "Logo de D'Henry",
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(130.dp),
+            contentScale = ContentScale.Fit
         )
 
         Spacer(
-            modifier = Modifier.height(8.dp)
+            modifier = Modifier.height(20.dp)
         )
 
         Text(
@@ -225,6 +231,7 @@ fun LoginScreen(
             modifier = Modifier.height(20.dp)
         )
 
+        // Botón para iniciar sesión
         Button(
             onClick = {
                 val emailInvalido =
@@ -257,6 +264,7 @@ fun LoginScreen(
             modifier = Modifier.height(12.dp)
         )
 
+        // Acceso al registro
         TextButton(
             onClick = onRegisterClick
         ) {

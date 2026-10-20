@@ -88,7 +88,7 @@ fun MainScreen(
     val navigationItems = listOf(
         NavigationItem(
             title = "Inicio",
-            icon = R.drawable.ic_restaurant
+            icon = R.drawable.ic_home
         ),
         NavigationItem(
             title = "Productos",
@@ -106,41 +106,48 @@ fun MainScreen(
 
     Scaffold(
         bottomBar = {
-            NavigationBar(
-                containerColor = MaterialTheme.colorScheme.surface
-            ) {
-                navigationItems.forEachIndexed { index, item ->
-                    NavigationBarItem(
-                        selected = selectedItem == index,
+            val mostrarBarraNavegacion =
+                !(selectedItem == 1 &&
+                        productoSeleccionado != null &&
+                        !modoNuevoProducto)
 
-                        onClick = {
-                            selectedItem = index
-                            productoSeleccionado = null
-                            productoEditando = null
-                            modoNuevoProducto = false
-                            modoNuevaOferta = false
-                        },
+            if (mostrarBarraNavegacion) {
+                NavigationBar(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ) {
+                    navigationItems.forEachIndexed { index, item ->
+                        NavigationBarItem(
+                            selected = selectedItem == index,
 
-                        icon = {
-                            Icon(
-                                painter = painterResource(item.icon),
-                                contentDescription = item.title
+                            onClick = {
+                                selectedItem = index
+                                productoSeleccionado = null
+                                productoEditando = null
+                                modoNuevoProducto = false
+                                modoNuevaOferta = false
+                            },
+
+                            icon = {
+                                Icon(
+                                    painter = painterResource(item.icon),
+                                    contentDescription = item.title
+                                )
+                            },
+
+                            label = {
+                                Text(text = item.title)
+                            },
+
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor =
+                                    MaterialTheme.colorScheme.primary,
+                                indicatorColor =
+                                    MaterialTheme.colorScheme.primaryContainer,
+                                unselectedIconColor =
+                                    MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                        },
-
-                        label = {
-                            Text(text = item.title)
-                        },
-
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor =
-                                MaterialTheme.colorScheme.primary,
-                            indicatorColor =
-                                MaterialTheme.colorScheme.primaryContainer,
-                            unselectedIconColor =
-                                MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                    )
+                    }
                 }
             }
         }
@@ -286,7 +293,12 @@ fun MainScreen(
                     NewOfferScreen(
                         modifier = Modifier.padding(innerPadding),
 
-                        productos = productos,
+                        // Evita ofrecer un producto que ya tiene oferta.
+                        productos = productos.filter { producto ->
+                            ofertas.none {
+                                it.producto.id == producto.id
+                            }
+                        },
 
                         onBack = {
                             modoNuevaOferta = false
@@ -301,14 +313,22 @@ fun MainScreen(
                         },
 
                         onGuardar = { nuevaOferta ->
-                            val nuevoId =
-                                (ofertas.maxOfOrNull { it.id } ?: 0) + 1
 
-                            val ofertaFinal = nuevaOferta.copy(
-                                id = nuevoId
-                            )
+                            val yaTieneOferta = ofertas.any {
+                                it.producto.id == nuevaOferta.producto.id
+                            }
 
-                            ofertas = ofertas + ofertaFinal
+                            if (!yaTieneOferta) {
+                                val nuevoId =
+                                    (ofertas.maxOfOrNull { it.id } ?: 0) + 1
+
+                                val ofertaFinal = nuevaOferta.copy(
+                                    id = nuevoId
+                                )
+
+                                ofertas = ofertas + ofertaFinal
+                            }
+
                             modoNuevaOferta = false
                         }
                     )
@@ -328,13 +348,32 @@ fun MainScreen(
                             modoNuevaOferta = true
                         },
 
-                        onOfertaClick = { oferta ->
+                        // Activar o desactivar una oferta.
+                        onToggleActiva = { oferta ->
                             ofertas = ofertas.map {
                                 if (it.id == oferta.id) {
                                     it.copy(activa = !it.activa)
                                 } else {
                                     it
                                 }
+                            }
+                        },
+
+                        // Actualizar el precio de una oferta.
+                        onModificarPrecio = { oferta, nuevoPrecio ->
+                            ofertas = ofertas.map {
+                                if (it.id == oferta.id) {
+                                    it.copy(precioOferta = nuevoPrecio)
+                                } else {
+                                    it
+                                }
+                            }
+                        },
+
+                        // Eliminar una oferta de la lista.
+                        onEliminar = { oferta ->
+                            ofertas = ofertas.filter {
+                                it.id != oferta.id
                             }
                         }
                     )

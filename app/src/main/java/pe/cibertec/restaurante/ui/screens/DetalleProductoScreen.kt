@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -20,6 +21,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -53,7 +55,7 @@ fun DetalleProductoScreen(
 
     val context = LocalContext.current
 
-    // Intenta cargar la imagen seleccionada para este producto.
+    // Cargar la imagen del producto.
     val imagenBitmap = remember(producto.imagenUri) {
         try {
             producto.imagenUri?.let { uri ->
@@ -75,22 +77,17 @@ fun DetalleProductoScreen(
             .background(MaterialTheme.colorScheme.background)
     ) {
 
-        // ENCABEZADO Y REGRESO
+        // ENCABEZADO
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(
-                    horizontal = 16.dp,
-                    vertical = 12.dp
-                ),
+                .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = "←",
                 modifier = Modifier
-                    .clickable {
-                        onBack()
-                    }
+                    .clickable { onBack() }
                     .padding(8.dp),
                 style = MaterialTheme.typography.headlineSmall
             )
@@ -105,39 +102,35 @@ fun DetalleProductoScreen(
             )
         }
 
-        // INFORMACIÓN DEL PRODUCTO
+        // CONTENIDO DESPLAZABLE
         Column(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp),
-
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
 
-            // IMAGEN
+            // IMAGEN CUADRADA
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(220.dp)
-                    .clip(RoundedCornerShape(16.dp))
+                    .aspectRatio(1f)
+                    .clip(RoundedCornerShape(12.dp))
                     .background(
                         MaterialTheme.colorScheme.surfaceVariant
                     ),
                 contentAlignment = Alignment.Center
             ) {
                 if (imagenBitmap != null) {
-
                     Image(
                         bitmap = imagenBitmap,
                         contentDescription = producto.nombre,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
                     )
-
                 } else {
-
                     Text(
                         text = "🍽",
                         style = MaterialTheme.typography.displayLarge
@@ -145,87 +138,131 @@ fun DetalleProductoScreen(
                 }
             }
 
-            // NOMBRE
-            Text(
-                text = producto.nombre,
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(top = 10.dp)
-            )
+            Spacer(modifier = Modifier.height(4.dp))
 
-            // CATEGORÍA
-            Text(
-                text = producto.categoria,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            // NOMBRE, CATEGORÍA Y ESTADO
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
 
-            // ESTADO
-            Text(
-                text = producto.estado,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Bold,
-                color = if (producto.estaActivo()) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.error
-                },
-                modifier = Modifier.padding(top = 2.dp)
-            )
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = producto.nombre,
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Text(
+                        text = producto.categoria,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                // ETIQUETA DE ESTADO
+                val estaActivo = producto.estaActivo()
+
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = if (estaActivo) {
+                        androidx.compose.ui.graphics.Color(0xFFE7F1E9)
+                    } else {
+                        androidx.compose.ui.graphics.Color(0xFFFCE8E6)
+                    }
+                ) {
+                    Text(
+                        text = producto.estado,
+                        modifier = Modifier.padding(
+                            horizontal = 12.dp,
+                            vertical = 6.dp
+                        ),
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = if (estaActivo) {
+                            androidx.compose.ui.graphics.Color(0xFF214D32)
+                        } else {
+                            MaterialTheme.colorScheme.error
+                        }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(2.dp))
 
             // PRECIO
             Text(
                 text = producto.precioFormateado(),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(top = 4.dp)
+                color = MaterialTheme.colorScheme.primary
             )
 
-            Spacer(
-                modifier = Modifier.height(12.dp)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // SEPARADOR
+            androidx.compose.material3.HorizontalDivider(
+                color = MaterialTheme.colorScheme.outlineVariant
             )
+
+            Spacer(modifier = Modifier.height(4.dp))
 
             // DESCRIPCIÓN
             Text(
                 text = "DESCRIPCIÓN",
                 style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             Text(
                 text = producto.descripcion.ifBlank {
                     "Sin descripción registrada."
                 },
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(top = 2.dp)
+                style = MaterialTheme.typography.bodyMedium
             )
 
-            Spacer(
-                modifier = Modifier.height(20.dp)
-            )
+            Spacer(modifier = Modifier.height(16.dp))
+        }
 
-            // EDITAR
+        // BOTONES DE ACCIÓN
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    horizontal = 16.dp,
+                    vertical = 12.dp
+                ),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             Button(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
                 onClick = onEditar
             ) {
-                Text("Editar producto")
+                Text(
+                    text = "Editar producto",
+                    fontWeight = FontWeight.SemiBold
+                )
             }
 
-            // ELIMINAR
             OutlinedButton(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(44.dp),
                 onClick = {
                     mostrarDialogo = true
                 }
             ) {
-                Text("Eliminar producto")
+                Text(
+                    text = "Eliminar producto",
+                    color = MaterialTheme.colorScheme.error,
+                    fontWeight = FontWeight.SemiBold
+                )
             }
-
-            Spacer(
-                modifier = Modifier.height(12.dp)
-            )
         }
     }
 
@@ -235,17 +272,12 @@ fun DetalleProductoScreen(
             onDismissRequest = {
                 mostrarDialogo = false
             },
-
             title = {
                 Text("Eliminar producto")
             },
-
             text = {
-                Text(
-                    "¿Deseas eliminar ${producto.nombre}?"
-                )
+                Text("¿Deseas eliminar ${producto.nombre}?")
             },
-
             confirmButton = {
                 Button(
                     onClick = {
@@ -256,7 +288,6 @@ fun DetalleProductoScreen(
                     Text("Sí, eliminar")
                 }
             },
-
             dismissButton = {
                 OutlinedButton(
                     onClick = {
