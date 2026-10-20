@@ -13,7 +13,9 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -129,7 +131,7 @@ fun OffersScreen(
             )
         }
 
-        // ENCABEZADO SECCION
+        // ENCABEZADO SECCIÓN
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -188,18 +190,22 @@ fun OffersScreen(
 
         Box(modifier = Modifier.weight(1f)) {
             if (visibles.isEmpty()) {
-                Text(
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .padding(32.dp),
-                    text = if (ofertas.isEmpty()) {
-                        "Aún no hay ofertas.\nToca + para crear la primera."
-                    } else {
-                        "No hay ofertas en esta categoría."
+                val sinOfertas = ofertas.isEmpty()
+
+                EstadoVacioOfertas(
+                    modifier = Modifier.align(Alignment.Center),
+                    titulo = when {
+                        sinOfertas -> "Aún no hay ofertas"
+                        filtro == FiltroOferta.ACTIVAS -> "No hay ofertas activas"
+                        else -> "No hay ofertas inactivas"
                     },
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = TextoSecundario,
-                    textAlign = TextAlign.Center
+                    mensaje = when {
+                        sinOfertas -> "Toca el botón + para crear la primera."
+                        filtro == FiltroOferta.ACTIVAS -> "Activa una oferta tocando su estado en la lista."
+                        else -> "Todas tus ofertas están activas."
+                    },
+                    textoBoton = if (sinOfertas) null else "Ver todas las ofertas",
+                    onBoton = { filtro = FiltroOferta.TODAS }
                 )
             } else {
                 LazyColumn(
@@ -284,6 +290,67 @@ fun OffersScreen(
                 }
             }
         )
+    }
+}
+
+@Composable
+private fun EstadoVacioOfertas(
+    modifier: Modifier = Modifier,
+    titulo: String,
+    mensaje: String,
+    textoBoton: String? = null,
+    onBoton: () -> Unit = {},
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(96.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primaryContainer),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_offer),
+                contentDescription = null,
+                tint = VerdeOscuro,
+                modifier = Modifier.size(44.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = titulo,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
+        )
+
+        Text(
+            text = mensaje,
+            style = MaterialTheme.typography.bodyMedium,
+            color = TextoSecundario,
+            textAlign = TextAlign.Center
+        )
+
+        if (textoBoton != null) {
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedButton(
+                shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(1.dp, VerdeOscuro),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = VerdeOscuro),
+                onClick = onBoton
+            ) {
+                Text(text = textoBoton, fontWeight = FontWeight.Bold)
+            }
+        }
     }
 }
 
