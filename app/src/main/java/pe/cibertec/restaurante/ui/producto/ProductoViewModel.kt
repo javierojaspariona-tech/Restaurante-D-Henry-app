@@ -31,21 +31,34 @@ class ProductoViewModel(
         viewModelScope.launch {
             try {
                 val esNuevo = producto.id == 0
-                val resultado = withContext(Dispatchers.IO) {
+
+                val guardado = withContext(Dispatchers.IO) {
                     if (esNuevo) {
-                        productoDAO.insertar(producto)
+                        productoDAO.insertar(producto) > 0L
                     } else {
-                        0L // Aquí irá la función de actualización (BD-3c)
+                        productoDAO.actualizar(producto) > 0
                     }
                 }
-                mensaje = if (resultado > 0L) {
-                    "Producto agregado correctamente"
-                } else {
-                    "No se pudo agregar el producto"
+
+                mensaje = when {
+                    guardado && esNuevo ->
+                        "Producto agregado correctamente"
+
+                    guardado ->
+                        "Producto actualizado correctamente"
+
+                    esNuevo ->
+                        "No se pudo agregar el producto"
+
+                    else ->
+                        "No se pudo actualizar el producto"
                 }
-                cargarProductos()
+
+                if (guardado) {
+                    cargarProductos()
+                }
             } catch (e: Exception) {
-                mensaje = "Error al guardar producto: ${e.message}"
+                mensaje = "Error al guardar el producto: ${e.message}"
             }
         }
     }
@@ -53,6 +66,7 @@ class ProductoViewModel(
     fun cargarProductos() {
         viewModelScope.launch {
             cargando = true
+
             try {
                 productos = withContext(Dispatchers.IO) {
                     productoDAO.obtenerTodos()
@@ -71,11 +85,13 @@ class ProductoViewModel(
                 val resultado = withContext(Dispatchers.IO) {
                     productoDAO.eliminar(producto.id)
                 }
+
                 mensaje = if (resultado > 0) {
                     "Producto eliminado correctamente"
                 } else {
                     "No se pudo eliminar el producto"
                 }
+
                 cargarProductos()
             } catch (e: Exception) {
                 mensaje = "Error al eliminar producto: ${e.message}"

@@ -46,6 +46,7 @@ fun MainScreen(
         productoViewModel.cargarProductos()
     }
 
+    // Ofertas de ejemplo: todavía se mantienen en memoria.
     var ofertas by remember {
         mutableStateOf(
             listOf(
@@ -65,7 +66,13 @@ fun MainScreen(
         )
     }
 
+    // Producto que se está consultando.
     var productoSeleccionado by remember {
+        mutableStateOf<Producto?>(null)
+    }
+
+    // Producto que se está editando.
+    var productoEditando by remember {
         mutableStateOf<Producto?>(null)
     }
 
@@ -77,7 +84,7 @@ fun MainScreen(
         mutableStateOf(false)
     }
 
-    // Barra inferior según el diseño del PDF.
+    // Navegación inferior del diseño acordado.
     val navigationItems = listOf(
         NavigationItem(
             title = "Inicio",
@@ -89,7 +96,7 @@ fun MainScreen(
         ),
         NavigationItem(
             title = "Ofertas",
-            icon = R.drawable.ic_offer
+            icon = R.drawable.ic_tag_price
         ),
         NavigationItem(
             title = "Perfil",
@@ -109,6 +116,7 @@ fun MainScreen(
                         onClick = {
                             selectedItem = index
                             productoSeleccionado = null
+                            productoEditando = null
                             modoNuevoProducto = false
                             modoNuevaOferta = false
                         },
@@ -140,7 +148,7 @@ fun MainScreen(
 
         when (selectedItem) {
 
-            // 0. INICIO
+            // INICIO
             0 -> {
                 InicioScreen(
                     modifier = Modifier.padding(innerPadding),
@@ -148,6 +156,7 @@ fun MainScreen(
                     onProductosClick = {
                         selectedItem = 1
                         productoSeleccionado = null
+                        productoEditando = null
                         modoNuevoProducto = false
                         modoNuevaOferta = false
                     },
@@ -155,6 +164,7 @@ fun MainScreen(
                     onOfertasClick = {
                         selectedItem = 2
                         productoSeleccionado = null
+                        productoEditando = null
                         modoNuevoProducto = false
                         modoNuevaOferta = false
                     },
@@ -162,13 +172,14 @@ fun MainScreen(
                     onPerfilClick = {
                         selectedItem = 3
                         productoSeleccionado = null
+                        productoEditando = null
                         modoNuevoProducto = false
                         modoNuevaOferta = false
                     }
                 )
             }
 
-            // 1. PRODUCTOS
+            // PRODUCTOS
             1 -> {
                 if (modoNuevoProducto) {
 
@@ -176,16 +187,36 @@ fun MainScreen(
                         modifier = Modifier.padding(innerPadding),
 
                         onBack = {
+                            // Si cancela la edición,
+                            // regresa al detalle anterior.
                             modoNuevoProducto = false
+                            productoEditando = null
                         },
 
-                        onGuardar = { nuevoProducto ->
+                        onGuardar = { productoGuardado ->
+                            val estabaEditando =
+                                productoEditando != null
+
+                            // El ViewModel decide si inserta
+                            // o actualiza según el ID.
                             productoViewModel.guardarProducto(
-                                nuevoProducto
+                                productoGuardado
                             )
 
+                            // Al editar, vuelve al detalle actualizado.
+                            // Al crear, vuelve al listado.
+                            productoSeleccionado =
+                                if (estabaEditando) {
+                                    productoGuardado
+                                } else {
+                                    null
+                                }
+
                             modoNuevoProducto = false
-                        }
+                            productoEditando = null
+                        },
+
+                        productoEditar = productoEditando
                     )
 
                 } else if (productoSeleccionado == null) {
@@ -197,9 +228,12 @@ fun MainScreen(
 
                         onProductoClick = { producto ->
                             productoSeleccionado = producto
+                            productoEditando = null
                         },
 
                         onAgregarClick = {
+                            productoSeleccionado = null
+                            productoEditando = null
                             modoNuevoProducto = true
                         },
 
@@ -216,25 +250,36 @@ fun MainScreen(
                         producto = productoSeleccionado!!,
 
                         onBack = {
+                            // Vuelve al listado.
                             productoSeleccionado = null
+                            productoEditando = null
                         },
 
                         onEditar = {
-                            // Pendiente de conectar con la edición.
+                            // Conserva el producto seleccionado
+                            // para poder volver a su detalle.
+                            productoEditando = productoSeleccionado
+                            modoNuevoProducto = true
                         },
 
                         onEliminar = {
-                            productoViewModel.eliminarProducto(
-                                productoSeleccionado!!
-                            )
+                            val productoAEliminar =
+                                productoSeleccionado
+
+                            if (productoAEliminar != null) {
+                                productoViewModel.eliminarProducto(
+                                    productoAEliminar
+                                )
+                            }
 
                             productoSeleccionado = null
+                            productoEditando = null
                         }
                     )
                 }
             }
 
-            // 2. OFERTAS
+            // OFERTAS
             2 -> {
                 if (modoNuevaOferta) {
 
@@ -250,6 +295,8 @@ fun MainScreen(
                         onIrANuevoProducto = {
                             modoNuevaOferta = false
                             selectedItem = 1
+                            productoSeleccionado = null
+                            productoEditando = null
                             modoNuevoProducto = true
                         },
 
@@ -294,7 +341,7 @@ fun MainScreen(
                 }
             }
 
-            // 3. PERFIL
+            // PERFIL
             3 -> {
                 PerfilScreen(
                     modifier = Modifier.padding(innerPadding),

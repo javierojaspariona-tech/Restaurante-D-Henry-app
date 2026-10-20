@@ -1,8 +1,11 @@
 package pe.cibertec.restaurante.ui.screens
 
+import android.graphics.BitmapFactory
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,9 +18,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,6 +28,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -40,9 +47,26 @@ fun DetalleProductoScreen(
     onEditar: () -> Unit = {},
     onEliminar: () -> Unit = {}
 ) {
-
-    var mostrarDialogo by remember {
+    var mostrarDialogo by remember(producto.id) {
         mutableStateOf(false)
+    }
+
+    val context = LocalContext.current
+
+    // Intenta cargar la imagen seleccionada para este producto.
+    val imagenBitmap = remember(producto.imagenUri) {
+        try {
+            producto.imagenUri?.let { uri ->
+                context.contentResolver
+                    .openInputStream(uri)
+                    ?.use { inputStream ->
+                        BitmapFactory.decodeStream(inputStream)
+                            ?.asImageBitmap()
+                    }
+            }
+        } catch (_: Exception) {
+            null
+        }
     }
 
     Column(
@@ -51,7 +75,7 @@ fun DetalleProductoScreen(
             .background(MaterialTheme.colorScheme.background)
     ) {
 
-        // ENCABEZADO
+        // ENCABEZADO Y REGRESO
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -61,7 +85,6 @@ fun DetalleProductoScreen(
                 ),
             verticalAlignment = Alignment.CenterVertically
         ) {
-
             Text(
                 text = "←",
                 modifier = Modifier
@@ -77,85 +100,112 @@ fun DetalleProductoScreen(
                 modifier = Modifier
                     .weight(1f)
                     .padding(start = 16.dp),
+                style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
         }
 
+        // INFORMACIÓN DEL PRODUCTO
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .weight(1f)
+                .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp)
+                .padding(16.dp),
+
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
 
-            Column(
+            // IMAGEN
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .height(220.dp)
+                    .clip(RoundedCornerShape(16.dp))
                     .background(
-                        MaterialTheme.colorScheme.surfaceVariant,
-                        RoundedCornerShape(16.dp)
-                    )
-                    .padding(32.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                        MaterialTheme.colorScheme.surfaceVariant
+                    ),
+                contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "🍽",
-                    style = MaterialTheme.typography.displayLarge
-                )
+                if (imagenBitmap != null) {
+
+                    Image(
+                        bitmap = imagenBitmap,
+                        contentDescription = producto.nombre,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+
+                } else {
+
+                    Text(
+                        text = "🍽",
+                        style = MaterialTheme.typography.displayLarge
+                    )
+                }
             }
 
+            // NOMBRE
             Text(
                 text = producto.nombre,
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(top = 18.dp)
+                modifier = Modifier.padding(top = 10.dp)
             )
 
+            // CATEGORÍA
             Text(
                 text = producto.categoria,
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            Text(
-                text = producto.precioFormateado(),
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(top = 8.dp)
-            )
-
+            // ESTADO
             Text(
                 text = producto.estado,
+                style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold,
                 color = if (producto.estaActivo()) {
                     MaterialTheme.colorScheme.primary
                 } else {
                     MaterialTheme.colorScheme.error
                 },
-                modifier = Modifier.padding(top = 8.dp)
+                modifier = Modifier.padding(top = 2.dp)
+            )
+
+            // PRECIO
+            Text(
+                text = producto.precioFormateado(),
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(top = 4.dp)
             )
 
             Spacer(
-                modifier = Modifier.height(16.dp)
+                modifier = Modifier.height(12.dp)
             )
 
+            // DESCRIPCIÓN
             Text(
                 text = "DESCRIPCIÓN",
-                style = MaterialTheme.typography.labelMedium,
+                style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold
             )
 
             Text(
-                text = producto.descripcion,
+                text = producto.descripcion.ifBlank {
+                    "Sin descripción registrada."
+                },
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(top = 6.dp)
+                modifier = Modifier.padding(top = 2.dp)
             )
 
             Spacer(
-                modifier = Modifier.height(32.dp)
+                modifier = Modifier.height(20.dp)
             )
 
+            // EDITAR
             Button(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = onEditar
@@ -163,10 +213,7 @@ fun DetalleProductoScreen(
                 Text("Editar producto")
             }
 
-            Spacer(
-                modifier = Modifier.height(12.dp)
-            )
-
+            // ELIMINAR
             OutlinedButton(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = {
@@ -175,23 +222,30 @@ fun DetalleProductoScreen(
             ) {
                 Text("Eliminar producto")
             }
+
+            Spacer(
+                modifier = Modifier.height(12.dp)
+            )
         }
     }
 
+    // CONFIRMACIÓN DE ELIMINACIÓN
     if (mostrarDialogo) {
-
         AlertDialog(
             onDismissRequest = {
                 mostrarDialogo = false
             },
+
             title = {
                 Text("Eliminar producto")
             },
+
             text = {
                 Text(
                     "¿Deseas eliminar ${producto.nombre}?"
                 )
             },
+
             confirmButton = {
                 Button(
                     onClick = {
@@ -202,6 +256,7 @@ fun DetalleProductoScreen(
                     Text("Sí, eliminar")
                 }
             },
+
             dismissButton = {
                 OutlinedButton(
                     onClick = {
@@ -215,9 +270,14 @@ fun DetalleProductoScreen(
     }
 }
 
-@Preview(showBackground = true)
+@Preview(
+    showBackground = true,
+    widthDp = 360,
+    heightDp = 800,
+    name = "Detalle producto D'Henry"
+)
 @Composable
-fun DetalleProductoScreenPreview() {
+private fun DetalleProductoScreenPreview() {
     RestauranteAppTheme {
         DetalleProductoScreen(
             producto = productosDemo[0]

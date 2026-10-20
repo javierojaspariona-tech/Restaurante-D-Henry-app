@@ -69,32 +69,65 @@ fun NewProductScreen(
     modifier: Modifier = Modifier,
     onBack: () -> Unit,
     onGuardar: (Producto) -> Unit,
+    productoEditar: Producto? = null
 ) {
     val context = LocalContext.current
 
-    var imagenUri by remember { mutableStateOf<Uri?>(null) }
-    var nombre by remember { mutableStateOf("") }
-    var categoria by remember { mutableStateOf("") }
-    var categoriaExpandida by remember { mutableStateOf(false) }
-    var precio by remember { mutableStateOf("") }
-    var descripcion by remember { mutableStateOf("") }
-    var disponible by remember { mutableStateOf(true) }
+    var imagenUri by remember(productoEditar?.id) {
+        mutableStateOf<Uri?>(productoEditar?.imagenUri)
+    }
 
-    var errorNombre by remember { mutableStateOf(false) }
-    var errorCategoria by remember { mutableStateOf(false) }
-    var errorPrecio by remember { mutableStateOf(false) }
+    var nombre by remember(productoEditar?.id) {
+        mutableStateOf(productoEditar?.nombre ?: "")
+    }
+
+    var categoria by remember(productoEditar?.id) {
+        mutableStateOf(productoEditar?.categoria ?: "")
+    }
+
+    var categoriaExpandida by remember {
+        mutableStateOf(false)
+    }
+
+    var precio by remember(productoEditar?.id) {
+        mutableStateOf(
+            productoEditar?.precio?.toString() ?: ""
+        )
+    }
+
+    var descripcion by remember(productoEditar?.id) {
+        mutableStateOf(productoEditar?.descripcion ?: "")
+    }
+
+    var disponible by remember(productoEditar?.id) {
+        mutableStateOf(productoEditar?.disponible ?: true)
+    }
+
+    var errorNombre by remember {
+        mutableStateOf(false)
+    }
+
+    var errorCategoria by remember {
+        mutableStateOf(false)
+    }
+
+    var errorPrecio by remember {
+        mutableStateOf(false)
+    }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
-        if (uri != null) imagenUri = uri
+        if (uri != null) {
+            imagenUri = uri
+        }
     }
 
     val colorCampos = OutlinedTextFieldDefaults.colors(
         focusedContainerColor = Color.White,
         unfocusedContainerColor = Color.White,
         unfocusedBorderColor = BordeCampo,
-        focusedBorderColor = VerdeOscuro,
+        focusedBorderColor = VerdeOscuro
     )
 
     Column(
@@ -106,18 +139,28 @@ fun NewProductScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 10.dp),
+                .padding(
+                    horizontal = 16.dp,
+                    vertical = 10.dp
+                ),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = "←",
                 modifier = Modifier
-                    .clickable { onBack() }
+                    .clickable {
+                        onBack()
+                    }
                     .padding(8.dp),
                 style = MaterialTheme.typography.headlineSmall
             )
+
             Text(
-                text = "Nuevo producto",
+                text = if (productoEditar == null) {
+                    "Nuevo producto"
+                } else {
+                    "Editar producto"
+                },
                 modifier = Modifier
                     .weight(1f)
                     .padding(start = 8.dp),
@@ -133,7 +176,7 @@ fun NewProductScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Imagen
+            // IMAGEN DEL PRODUCTO
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -144,14 +187,20 @@ fun NewProductScreen(
                             color = Color(0xFFBDBDBD),
                             style = Stroke(
                                 width = 2.dp.toPx(),
-                                pathEffect = PathEffect.dashPathEffect(floatArrayOf(16f, 12f))
+                                pathEffect = PathEffect.dashPathEffect(
+                                    floatArrayOf(16f, 12f)
+                                )
                             ),
-                            cornerRadius = CornerRadius(12.dp.toPx())
+                            cornerRadius = CornerRadius(
+                                12.dp.toPx()
+                            )
                         )
                     }
                     .clickable {
                         launcher.launch(
-                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                            PickVisualMediaRequest(
+                                ActivityResultContracts.PickVisualMedia.ImageOnly
+                            )
                         )
                     },
                 contentAlignment = Alignment.Center
@@ -159,13 +208,18 @@ fun NewProductScreen(
                 if (imagenUri != null) {
                     val bitmap = remember(imagenUri) {
                         try {
-                            context.contentResolver.openInputStream(imagenUri!!)?.use { inputStream ->
-                                BitmapFactory.decodeStream(inputStream)?.asImageBitmap()
-                            }
+                            context.contentResolver
+                                .openInputStream(imagenUri!!)
+                                ?.use { inputStream ->
+                                    BitmapFactory.decodeStream(
+                                        inputStream
+                                    )?.asImageBitmap()
+                                }
                         } catch (_: Exception) {
                             null
                         }
                     }
+
                     if (bitmap != null) {
                         Image(
                             bitmap = bitmap,
@@ -175,12 +229,17 @@ fun NewProductScreen(
                         )
                     }
                 } else {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
                         Icon(
-                            painter = painterResource(R.drawable.ic_camera),
+                            painter = painterResource(
+                                R.drawable.ic_camera
+                            ),
                             contentDescription = null,
-                            tint = VerdeOscuro,
+                            tint = VerdeOscuro
                         )
+
                         Text(
                             modifier = Modifier.padding(top = 8.dp),
                             text = "Agregar imagen del producto",
@@ -192,25 +251,32 @@ fun NewProductScreen(
                 }
             }
 
-            // Nombre
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            // NOMBRE
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
                 Text(
                     text = "Nombre del producto",
                     style = MaterialTheme.typography.bodySmall,
                     color = TextoSecundario
                 )
+
                 OutlinedTextField(
                     modifier = Modifier.fillMaxWidth(),
                     value = nombre,
                     onValueChange = {
                         nombre = it
-                        if (it.isNotBlank()) errorNombre = false
+                        if (it.isNotBlank()) {
+                            errorNombre = false
+                        }
                     },
-                    placeholder = { Text(text = "Ej. Ceviche de pescado") },
+                    placeholder = {
+                        Text("Ej. Ceviche de pescado")
+                    },
                     leadingIcon = {
                         Icon(
                             painter = painterResource(R.drawable.ic_food),
-                            contentDescription = null,
+                            contentDescription = null
                         )
                     },
                     singleLine = true,
@@ -218,35 +284,44 @@ fun NewProductScreen(
                     colors = colorCampos,
                     isError = errorNombre,
                     supportingText = {
-                        if (errorNombre) Text(text = "El nombre es obligatorio")
-                    },
+                        if (errorNombre) {
+                            Text("El nombre es obligatorio")
+                        }
+                    }
                 )
             }
 
-            // Categoría
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            // CATEGORÍA
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
                 Text(
                     text = "Categoría",
                     style = MaterialTheme.typography.bodySmall,
                     color = TextoSecundario
                 )
-                Box(modifier = Modifier.fillMaxWidth()) {
+
+                Box(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     OutlinedTextField(
                         modifier = Modifier.fillMaxWidth(),
                         value = categoria,
                         onValueChange = {},
                         readOnly = true,
-                        placeholder = { Text(text = "Selecciona una categoría") },
+                        placeholder = {
+                            Text("Selecciona una categoría")
+                        },
                         leadingIcon = {
                             Icon(
                                 painter = painterResource(R.drawable.ic_menu),
-                                contentDescription = null,
+                                contentDescription = null
                             )
                         },
                         trailingIcon = {
                             Icon(
                                 painter = painterResource(R.drawable.ic_arrow_down),
-                                contentDescription = null,
+                                contentDescription = null
                             )
                         },
                         singleLine = true,
@@ -254,21 +329,31 @@ fun NewProductScreen(
                         colors = colorCampos,
                         isError = errorCategoria,
                         supportingText = {
-                            if (errorCategoria) Text(text = "Selecciona una categoría")
-                        },
+                            if (errorCategoria) {
+                                Text("Selecciona una categoría")
+                            }
+                        }
                     )
+
                     Box(
                         modifier = Modifier
                             .matchParentSize()
-                            .clickable { categoriaExpandida = true }
+                            .clickable {
+                                categoriaExpandida = true
+                            }
                     )
+
                     DropdownMenu(
                         expanded = categoriaExpandida,
-                        onDismissRequest = { categoriaExpandida = false }
+                        onDismissRequest = {
+                            categoriaExpandida = false
+                        }
                     ) {
                         CATEGORIAS.forEach { item ->
                             DropdownMenuItem(
-                                text = { Text(text = item) },
+                                text = {
+                                    Text(text = item)
+                                },
                                 onClick = {
                                     categoria = item
                                     errorCategoria = false
@@ -280,31 +365,42 @@ fun NewProductScreen(
                 }
             }
 
-            // Precio
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            // PRECIO
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
                 Text(
                     text = "Precio (S/)",
                     style = MaterialTheme.typography.bodySmall,
                     color = TextoSecundario
                 )
+
                 OutlinedTextField(
                     modifier = Modifier.fillMaxWidth(),
                     value = precio,
                     onValueChange = {
                         if (esPrecioParcialValido(it)) {
                             precio = it
+
                             val numero = it.aPrecioOrNull()
-                            if (numero != null && numero > 0.0) errorPrecio = false
+
+                            if (numero != null && numero > 0.0) {
+                                errorPrecio = false
+                            }
                         }
                     },
-                    placeholder = { Text(text = "Ej. 25.00") },
+                    placeholder = {
+                        Text("Ej. 25.00")
+                    },
                     leadingIcon = {
                         Icon(
                             painter = painterResource(R.drawable.ic_card),
-                            contentDescription = null,
+                            contentDescription = null
                         )
                     },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Decimal
+                    ),
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
                     colors = colorCampos,
@@ -312,38 +408,49 @@ fun NewProductScreen(
                     supportingText = {
                         if (errorPrecio) {
                             Text(
-                                text = if (precio.isBlank()) "El precio es obligatorio"
-                                else "Ingrese un precio válido mayor a 0"
+                                text = if (precio.isBlank()) {
+                                    "El precio es obligatorio"
+                                } else {
+                                    "Ingrese un precio válido mayor a 0"
+                                }
                             )
                         }
-                    },
+                    }
                 )
             }
 
-            // Descripción
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            // DESCRIPCIÓN
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
                 Text(
                     text = "Descripción",
                     style = MaterialTheme.typography.bodySmall,
                     color = TextoSecundario
                 )
+
                 OutlinedTextField(
                     modifier = Modifier.fillMaxWidth(),
                     value = descripcion,
-                    onValueChange = { descripcion = it },
-                    placeholder = { Text(text = "Describe los ingredientes, porciones...") },
+                    onValueChange = {
+                        descripcion = it
+                    },
+                    placeholder = {
+                        Text("Describe los ingredientes, porciones...")
+                    },
                     leadingIcon = {
                         Icon(
                             painter = painterResource(R.drawable.ic_edit),
-                            contentDescription = null,
+                            contentDescription = null
                         )
                     },
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
-                    colors = colorCampos,
+                    colors = colorCampos
                 )
             }
 
+            // DISPONIBILIDAD
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -354,50 +461,70 @@ fun NewProductScreen(
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold
                 )
+
                 Switch(
                     checked = disponible,
-                    onCheckedChange = { disponible = it },
+                    onCheckedChange = {
+                        disponible = it
+                    },
                     colors = SwitchDefaults.colors(
                         checkedTrackColor = VerdeOscuro,
-                        checkedThumbColor = Color.White,
+                        checkedThumbColor = Color.White
                     )
                 )
             }
         }
 
+        // GUARDAR
         Button(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
                 .height(52.dp),
             shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = VerdeOscuro),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = VerdeOscuro
+            ),
             onClick = {
                 val precioNumero = precio.aPrecioOrNull()
 
                 errorNombre = nombre.isBlank()
                 errorCategoria = categoria.isEmpty()
-                errorPrecio = precioNumero == null || precioNumero <= 0.0
+                errorPrecio = precioNumero == null ||
+                        precioNumero <= 0.0
 
-                if (!errorNombre && !errorCategoria && !errorPrecio && precioNumero != null) {
+                if (
+                    !errorNombre &&
+                    !errorCategoria &&
+                    !errorPrecio &&
+                    precioNumero != null
+                ) {
                     onGuardar(
                         Producto(
-                            id = 0,
+                            id = productoEditar?.id ?: 0,
                             nombre = nombre.trim(),
                             categoria = categoria,
                             precio = precioNumero,
                             descripcion = descripcion.trim(),
                             disponible = disponible,
-                            imagenUri = imagenUri,
+                            imagenUri = imagenUri
                         )
                     )
                 } else {
-                    Toast.makeText(context, "Revisa los campos marcados", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        context,
+                        "Revisa los campos marcados",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         ) {
             Text(
-                text = "Guardar producto",
+                text = if (productoEditar == null) {
+                    "Guardar producto"
+                } else {
+                    "Guardar cambios"
+                },
                 fontWeight = FontWeight.Bold
             )
         }
@@ -411,7 +538,7 @@ fun NewProductScreenPreview() {
         NewProductScreen(
             modifier = Modifier.fillMaxSize(),
             onBack = {},
-            onGuardar = {},
+            onGuardar = {}
         )
     }
 }
